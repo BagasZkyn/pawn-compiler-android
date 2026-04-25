@@ -65,13 +65,12 @@ if(APPLE)
   set(CMAKE_MACOSX_RPATH ON)
 endif()
 
-# Android/Termux specific settings
-if(ANDROID OR ANDROID_TERMUX)
+# Android/Termux specific settings (Linux/Android only, not Windows)
+if((ANDROID OR ANDROID_TERMUX) AND UNIX AND NOT APPLE)
   add_definitions(-DANDROID)
   # Needed for Android linker compatibility
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,noexecstack")
   set(CMAKE_EXE_LINKER_FLAGS    "${CMAKE_EXE_LINKER_FLAGS}    -Wl,-z,noexecstack")
-  # Android's linker doesn't support --enable-new-dtags by default
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--build-id")
 endif()
 
