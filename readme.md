@@ -86,6 +86,41 @@ Parallel installation is supported.
 
 If you are a [sampctl][sampctl] user, you are already using this compiler!
 
+### Termux (Android)
+
+You can build and run the Pawn compiler directly on Android via [Termux](https://termux.dev).
+
+**Option A — Build directly inside Termux (recommended):**
+
+```bash
+# Clone the repo inside Termux, then:
+bash build-termux.sh
+```
+
+This installs `pawncc` and `libpawnc.so` into Termux's `$PREFIX/bin` and `$PREFIX/lib`.
+
+**Option B — Cross-compile from PC using Android NDK:**
+
+```bash
+# Linux/macOS
+export ANDROID_NDK=/path/to/android-ndk-r25c
+bash build-android-ndk.sh arm64-v8a   # or armeabi-v7a / x86_64
+```
+
+```powershell
+# Windows (PowerShell)
+$env:ANDROID_NDK = "C:\android-ndk-r25c"
+.\build-android-ndk.ps1 -Abi arm64-v8a
+```
+
+Then copy the binaries to your device:
+
+```bash
+adb push build-android-arm64-v8a/pawncc      /data/data/com.termux/files/usr/bin/
+adb push build-android-arm64-v8a/libpawnc.so /data/data/com.termux/files/usr/lib/
+adb shell chmod +x /data/data/com.termux/files/usr/bin/pawncc
+```
+
 ### Building from Source
 
 If you are interested in contributing then please first read

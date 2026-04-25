@@ -55,11 +55,24 @@ endif()
 if(UNIX)
   add_definitions(-DLINUX -DENABLE_BINRELOC -g)
   include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../linux)
-  link_libraries(pthread)
+  # Android/Termux: pthread is part of libc, no separate linking needed
+  if(NOT ANDROID AND NOT ANDROID_TERMUX)
+    link_libraries(pthread)
+  endif()
 endif()
 
 if(APPLE)
   set(CMAKE_MACOSX_RPATH ON)
+endif()
+
+# Android/Termux specific settings
+if(ANDROID OR ANDROID_TERMUX)
+  add_definitions(-DANDROID)
+  # Needed for Android linker compatibility
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,noexecstack")
+  set(CMAKE_EXE_LINKER_FLAGS    "${CMAKE_EXE_LINKER_FLAGS}    -Wl,-z,noexecstack")
+  # Android's linker doesn't support --enable-new-dtags by default
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--build-id")
 endif()
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.h.in
@@ -145,7 +158,7 @@ set(PAWNDISASM_SRCS
   ../amx/amxdbg.c
 )
 add_executable(pawndisasm ${PAWNDISASM_SRCS})
-if(UNIX)
+if(UNIX AND NOT ANDROID AND NOT ANDROID_TERMUX)
   target_link_libraries(pawndisasm dl)
 endif()
 
@@ -184,7 +197,7 @@ if(BUILD_TESTING)
     )
   endif()
   add_executable(pawnruns ${PAWNRUNS_SRCS})
-  if(UNIX)
+  if(UNIX AND NOT ANDROID AND NOT ANDROID_TERMUX)
     target_link_libraries(pawnruns dl)
   endif()
   add_subdirectory(tests)
