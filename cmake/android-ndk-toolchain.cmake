@@ -90,6 +90,14 @@ set(CMAKE_SYSROOT
 set(ANDROID_TERMUX ON)
 add_definitions(-DANDROID)
 
+# Set RPATH to Termux lib directory so pawncc can find libpawnc.so at runtime
+set(TERMUX_LIB_DIR "/data/data/com.termux/files/usr/lib")
+set(CMAKE_SKIP_BUILD_RPATH FALSE)
+set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+set(CMAKE_INSTALL_RPATH "${TERMUX_LIB_DIR}")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-rpath,${TERMUX_LIB_DIR}")
+set(CMAKE_EXE_LINKER_FLAGS    "${CMAKE_EXE_LINKER_FLAGS}    -Wl,-rpath,${TERMUX_LIB_DIR}")
+
 # Don't try to find host libraries
 set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)

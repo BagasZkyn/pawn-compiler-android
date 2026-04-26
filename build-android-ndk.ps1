@@ -50,14 +50,27 @@ Write-Host "[1/3] Configuring..." -ForegroundColor Green
 New-Item -ItemType Directory -Force -Path $buildDir | Out-Null
 
 $ndkToolchain = "$ndkPath\build\cmake\android.toolchain.cmake"
+if (-not (Test-Path $ndkToolchain)) {
+    Write-Error "Toolchain file not found: $ndkToolchain"
+}
+# Convert to forward slashes for CMake compatibility
+$ndkToolchain = $ndkToolchain.Replace("\", "/")
+$TermuxLib = "/data/data/com.termux/files/usr/lib"
+$TermuxBin = "/data/data/com.termux/files/usr/bin"
+
 $cmakeArgs = @(
     "..\source\compiler",
-    "-DCMAKE_TOOLCHAIN_FILE=`"$ndkToolchain`"",
+    "-DCMAKE_TOOLCHAIN_FILE=$ndkToolchain",
     "-DANDROID_ABI=$Abi",
     "-DANDROID_PLATFORM=$Platform",
     "-DANDROID_TERMUX=ON",
     "-DCMAKE_BUILD_TYPE=Release",
     "-DBUILD_TESTING=OFF",
+    "-DCMAKE_INSTALL_PREFIX=/data/data/com.termux/files/usr",
+    "-DCMAKE_INSTALL_RPATH=$TermuxLib",
+    "-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON",
+    "-DCMAKE_SHARED_LINKER_FLAGS=-Wl,-rpath,$TermuxLib",
+    "-DCMAKE_EXE_LINKER_FLAGS=-Wl,-rpath,$TermuxLib",
     "-DCMAKE_MAKE_PROGRAM=ninja",
     "-GNinja"
 )
@@ -80,7 +93,10 @@ Write-Host "[3/3] Done!" -ForegroundColor Green
 Write-Host ""
 Write-Host "Binaries are in: $buildDir\" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "To deploy to Termux via ADB:"
+Write-Host "To deploy to Termux via ADB:" -ForegroundColor Yellow
 Write-Host "  adb push $buildDir\pawncc /data/data/com.termux/files/usr/bin/"
 Write-Host "  adb push $buildDir\libpawnc.so /data/data/com.termux/files/usr/lib/"
 Write-Host "  adb shell chmod +x /data/data/com.termux/files/usr/bin/pawncc"
+Write-Host ""
+Write-Host "NOTE: libpawnc.so MUST be copied to Termux before running pawncc." -ForegroundColor Red
+Write-Host "      RPATH is set to /data/data/com.termux/files/usr/lib" -ForegroundColor Red

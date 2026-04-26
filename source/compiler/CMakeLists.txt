@@ -72,6 +72,16 @@ if((ANDROID OR ANDROID_TERMUX) AND UNIX AND NOT APPLE)
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,noexecstack")
   set(CMAKE_EXE_LINKER_FLAGS    "${CMAKE_EXE_LINKER_FLAGS}    -Wl,-z,noexecstack")
   set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--build-id")
+  # Set RPATH so pawncc can find libpawnc.so at runtime in Termux
+  if(DEFINED ENV{PREFIX})
+    set(TERMUX_LIB_DIR "$ENV{PREFIX}/lib")
+  else()
+    set(TERMUX_LIB_DIR "/data/data/com.termux/files/usr/lib")
+  endif()
+  set(CMAKE_SKIP_BUILD_RPATH FALSE)
+  set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
+  set(CMAKE_INSTALL_RPATH "${TERMUX_LIB_DIR}")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-rpath,${TERMUX_LIB_DIR}")
 endif()
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/version.h.in
